@@ -98,4 +98,11 @@ script = File.open("script.js", "r").read
 	@code += 1
 end
 
+#do some HTML cleanup
+@html.gsub!(/‘/, "&#8216;")
+@html.gsub!(/’/, "&#8217;")
+@html.gsub!(/•/, "&#8226;")
+
+puts @html
+
 File.open("output.html", 'w') { |file| file.write(@html) }
