@@ -1,5 +1,8 @@
 *.gem
 *.rbc
+*.tsv
+*.swp
+output.html
 .bundle
 .config
 coverage
