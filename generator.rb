@@ -85,7 +85,7 @@ script = File.open("script.js", "r").read
 											"Timestamp"	]
 
 		##labels for each field
-		display_list = {	"COUNTER_SUSHI Version" => "COUNTER_SUSHI Version",
+		display_list = {	"COUNTER_SUSHI Version" => "COUNTER Version",
 											"Content host/platform" => "Platform",
 											"SUSHI contact name" => "Contact Name",
 											"SUSHI contact phone" => "Contact Phone",
