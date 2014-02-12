@@ -1,9 +1,14 @@
 #! /usr/bin/ruby
+require 'csv'
 
-table = File.open("SUSHI Content Provider Information - Sheet1.tsv", "r").read.split("\n")
+table = Array.new
+
+CSV::Reader.parse(File.open('SUSHI Content Provider Information - Sheet1.csv', 'r')) do |row|
+	table << row
+end
 
 ##grab the header
-header = table[0].split("\t")
+header = table[0]
 
 ##delete the header and the first element, which is blank
 table.slice!(0,2)
@@ -11,21 +16,21 @@ table.slice!(0,2)
 @entry_list = Array.new
 @organization_list = Hash.new
 
-table.each do |line|
+table.each do |fields|
 	'parse the table and sort through lines'
-	fields = line.split("\t")
 	header_index = 0
 	entry_content = Hash.new
 	fields.each do |field|
+		field.gsub!(/\n/, "<br>") if field.kind_of? String #convert newlines for html here, it gets messy later
 		entry_content[header[header_index]] = field
 		header_index += 1
 	end
-	@entry_list << entry_content
+	@entry_list << entry_content unless ((fields[-1].kind_of? String) && (fields[-1].include? "no"))
 end
 
 @entry_list.each do |entry|
 	'populate the hash of entries by organization name, storing them as arrays'
-	unless @organization_list.has_key?("Organization Name") 
+	unless @organization_list.has_key?(entry["Organization Name"])
 		@organization_list[entry["Organization Name"]] = Array.new
 		@organization_list[entry["Organization Name"]] << entry
 	else
@@ -42,25 +47,28 @@ end
 script = File.open("script.js", "r").read
 @html << script
 
+##add a title
+@html << "<h2>SUSHI Server Registry</h2>"
+
 @code = 0
 @code_array = ["a", "b"]
 @organization_names.each do |name|
 	'generate html for the site'
 
 	##Label for organization
-	@html << "<h2>#{name}</h2>"
+	@html << "<h3>#{name}</h3>"
 
 	code_array_index = 0
 	##create the appropriate number of buttons
 	@organization_list[name].each do |entry|
-		@html << "<input type=\"button\" onClick=\"toggle('#{@code.to_s + "-" + @code_array[code_array_index]}')\" value=\"#{entry['COUNTER_SUSHI Version']}\">"
+		@html << "<input type=\"button\" onClick=\"toggle('#{@code.to_s}-#{@code_array[code_array_index]}')\" value=\"#{entry['COUNTER_SUSHI Version']}\">"
 		code_array_index += 1
 	end
 
 	code_array_index = 0
 	##create the tables for each entry
 	@organization_list[name].each do |entry|
-		@html << "<div id=\"#{@code.to_s + "-" + @code_array[code_array_index]}\" style=\"display:none\"><table><col width=\"30%\"><tbody>"
+		@html << "<div id=\"#{@code.to_s}-#{@code_array[code_array_index]}\" style=\"display:none\"><table><col width=\"30%\"><tbody>"
 		
 		##fields to display
 		field_list = [	  "COUNTER_SUSHI Version",
@@ -89,8 +97,9 @@ script = File.open("script.js", "r").read
 											"Supported reports" => "Reports Supported",
 											"Other Notes" => "Other Notes",
 											"Timestamp" => "Submitted"	}
+		##Add the fields (as long as they have content)
 		field_list.each do |key|
-			@html << "<tr><td>#{display_list[key]}<br></td><td>#{entry[key]}<br></td></tr>" unless entry[key] == ""
+			@html << "<tr><td>#{display_list[key]}</td><td>#{entry[key]}</td></tr>" if entry[key] =~ /\w/
 		end
 		@html << @entry_end = "</tbody></table></div>"
 		code_array_index += 1

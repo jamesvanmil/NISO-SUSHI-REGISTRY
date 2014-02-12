@@ -1,6 +1,7 @@
 *.gem
 *.rbc
 *.tsv
+*.csv
 *.swp
 output.html
 .bundle
